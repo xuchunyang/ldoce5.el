@@ -1,23 +1,9 @@
 '''Archive reader for IDM's format'''
 
-from __future__ import absolute_import
-
 import os.path
 from struct import unpack
 from zlib import decompress
-try:
-    from configparser import SafeConfigParser
-except:
-    from ConfigParser import SafeConfigParser
-
-try:
-    import __builtin__
-    range = __builtin__.xrange
-except ImportError:
-    pass
-
-import itertools
-zip = getattr(itertools, 'izip', zip)
+from configparser import ConfigParser
 
 _IDM_TYPE_SIZES = {'UBYTE': 1, 'USHORT': 2, 'U24': 3, 'ULONG': 4}
 
@@ -82,9 +68,9 @@ def is_ldoce5_dir(path):
 def list_files(data_root, archive_name):
 
     def _parse_cft(path):
-        cp = SafeConfigParser()
+        cp = ConfigParser()
         with open(path, 'r') as f:
-            cp.readfp(f)
+            cp.read_file(f)
         r = {}
         r['offsets'] = {}
         offset = 0
