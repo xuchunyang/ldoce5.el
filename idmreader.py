@@ -230,3 +230,13 @@ class ArchiveReader(object):
         if self._f:
             self._f.close()
 
+
+if __name__ == '__main__':
+    DATA_DIR = os.path.expanduser('~/ldoce5.data')
+    ARCHIVE_NAME = 'fs'
+    reader = ArchiveReader(DATA_DIR, ARCHIVE_NAME)
+    for path, name, location in list_files(DATA_DIR, ARCHIVE_NAME):
+        b = reader.read(location)
+        s = b.decode()
+        print(s)
+        break
