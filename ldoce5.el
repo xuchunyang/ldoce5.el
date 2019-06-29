@@ -3,7 +3,9 @@
 ;; Copyright (C) 2019  Xu Chunyang
 
 ;; Author: Xu Chunyang <mail@xuchunyang.me>
-;; Keywords: english dictionary
+;; Homepage: https://github.com/xuchunyang/ldoce5.el
+;; Version: 0
+;; Package-Requires: ((emacs "25.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -23,6 +25,9 @@
 ;; An Emacs interface to LDOCE5.
 
 ;;; Code:
+
+(require 'subr-x)
+(require 'dom)
 
 (defconst ldoce5--load-dir (file-name-directory
                             (or load-file-name buffer-file-name))
@@ -88,9 +93,9 @@
                    (string-trim (dom-texts dom ""))
                    'face '(:foreground "green yellow"))))
     (when-let ((dom (dom-child-by-tag sense 'SIGNPOST)))
-      (insert " " (propertize (caddr dom) 'face '(:background "forest green"))))
+      (insert " " (propertize (car (cddr dom)) 'face '(:background "forest green"))))
     (when-let ((dom (dom-child-by-tag sense 'LEXUNIT)))
-      (insert " " (propertize (caddr dom) 'face '(:background "dark green"))))
+      (insert " " (propertize (car (cddr dom)) 'face '(:background "dark green"))))
     (when-let ((dom (dom-child-by-tag sense 'DEF)))
       (insert " " (string-trim (dom-texts dom ""))))
     (insert "\n")
