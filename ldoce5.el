@@ -111,7 +111,7 @@
          (prompt (if default
                      (format "LDOCE5 Lookup (default %s): " default)
                    "LDOCE5 Lookup: ")))
-    (read-string prompt nil nil default)))
+    (completing-read prompt (ldoce5--list) nil t nil nil default)))
 
 (defun ldoce5-lookup (word)
   (interactive (list (ldoce5--read-word)))
