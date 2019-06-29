@@ -103,8 +103,18 @@
       (insert " " (dom-texts (dom-child-by-tag dom 'BASE) "") "\n"))
     (buffer-string)))
 
+(defun ldoce5--read-word ()
+  (let* ((default (cond ((use-region-p)
+                         (buffer-substring (region-beginning) (region-end)))
+                        (t
+                         (thing-at-point 'word))))
+         (prompt (if default
+                     (format "LDOCE5 Lookup (default %s): " default)
+                   "LDOCE5 Lookup: ")))
+    (read-string prompt nil nil default)))
+
 (defun ldoce5-lookup (word)
-  (interactive "sWord: ")
+  (interactive (list (ldoce5--read-word)))
   (let ((dom (ldoce5--search word)))
     (with-current-buffer (get-buffer-create "*LDOCE5*")
       (erase-buffer)
