@@ -33,12 +33,30 @@
 
 (defun ldoce5--search (word)
   "Search WORD and return parsed XML."
-  (with-temp-buffer
-    (if (zerop (call-process
-                ldoce5-python-interpreter nil t nil
-                (expand-file-name "search.py" ldoce5--load-dir) word))
-        (libxml-parse-xml-region (point-min) (point-max))
-      (error "ldoce5--search failed: %s" (buffer-string)))))
+  (pcase (assoc word (ldoce5--list))
+    (`(,_ ,location)
+     (with-temp-buffer
+       (if (zerop (call-process
+                   ldoce5-python-interpreter nil t nil
+                   (expand-file-name "ldoce5.py" ldoce5--load-dir)
+                   "lookup" location))
+           (libxml-parse-xml-region (point-min) (point-max))
+         (error "ldoce5--search failed: %s" (buffer-string)))))
+    (_ (user-error "%s is not known" word))))
+
+(defvar ldoce5--list nil)
+
+(defun ldoce5--list ()
+  (unless ldoce5--list
+    (message "[LDOCE5] Building word list...")
+    (setq ldoce5--list
+          (mapcar
+           (lambda (line)
+             (split-string line " | "))
+           (process-lines ldoce5-python-interpreter
+                          (expand-file-name "ldoce5.py" ldoce5--load-dir)
+                          "list"))))
+  ldoce5--list)
 
 (defun ldoce5--Head (head)
   "Format <Head>."
@@ -74,7 +92,7 @@
     (when-let ((dom (dom-child-by-tag sense 'LEXUNIT)))
       (insert " " (propertize (caddr dom) 'face '(:background "dark green"))))
     (when-let ((dom (dom-child-by-tag sense 'DEF)))
-      (insert " " (dom-texts dom "")))
+      (insert " " (string-trim (dom-texts dom ""))))
     (insert "\n")
     (dolist (dom (dom-by-tag sense 'EXAMPLE))
       (insert " " (dom-texts (dom-child-by-tag dom 'BASE) "") "\n"))
