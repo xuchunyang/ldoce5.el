@@ -88,6 +88,8 @@
   (with-temp-buffer
     (insert (propertize (dom-text (car (dom-by-class sense "sensenum")))
                         'face '(:foreground "blue")))
+    (when-let ((dom (dom-child-by-tag sense 'Inflections)))
+      (insert " " (string-trim (dom-texts dom ""))))
     (when-let ((dom (dom-child-by-tag sense 'GRAM)))
       (insert " " (propertize
                    (string-trim (dom-texts dom ""))
