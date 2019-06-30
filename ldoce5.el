@@ -133,6 +133,7 @@
     (goto-char (point-min))
     (pop-to-buffer (current-buffer))))
 
+;;;###autoload
 (defun ldoce5-lookup (word)
   (interactive (list (ldoce5--read-word)))
   (let ((dom (ldoce5--search word)))
@@ -144,6 +145,7 @@
 (declare-function helm "helm")
 (declare-function helm-make-source "helm-source")
 
+;;;###autoload
 (defun ldoce5-helm ()
   (interactive)
   (require 'helm)
