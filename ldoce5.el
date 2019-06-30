@@ -135,8 +135,28 @@
                    "LDOCE5 Lookup: ")))
     (completing-read prompt (ldoce5--list) nil t nil nil default)))
 
+(defvar ldoce5-view-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "&")
+      ;; Without a name, M-x will ignore this command (it's good to me)
+      (lambda ()
+        (interactive)
+        (save-excursion
+          (goto-char (point-min))
+          (let ((word (current-word)))
+            ;; XXX Don't work for "BBC, the", ignore it for now
+            (setq word (replace-regexp-in-string (rx (group num) eos) "_\\1" word))
+            (browse-url
+             (format "http://global.longmandictionaries.com/ldoce6/dictionary#%s"
+                     word))))))
+    map))
+
+(define-derived-mode ldoce5-view-mode fundamental-mode "LDOCE5"
+  "Major mode for viewing LDOCE5 entry.")
+
 (defun ldoce5--display (dom)
   (with-current-buffer (get-buffer-create "*LDOCE5*")
+    (ldoce5-view-mode)
     (erase-buffer)
     (insert (ldoce5--Head (dom-child-by-tag dom 'Head)) "\n")
     (insert (string-join (mapcar #'ldoce5--Sense (dom-by-tag dom 'Sense)) "\n"))
