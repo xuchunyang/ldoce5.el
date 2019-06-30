@@ -117,9 +117,24 @@
                               'face '(:background "dark green"))))
     (when-let ((dom (dom-child-by-tag sense 'DEF)))
       (insert " " (string-trim (dom-texts dom ""))))
-    (when-let ((dom (dom-child-by-tag sense 'SYN)))
-      (insert " " (propertize (string-trim (dom-texts dom ""))
-                              'face '(:inverse-video t))))
+    (when-let ((s (string-join
+                   (mapcar #'dom-text (dom-by-tag sense 'SYN))
+                   ", ")))
+      (unless (string-empty-p s)
+        (insert
+         " "
+         (propertize "SYN" 'face '(:inverse-video t))
+         " "
+         s)))
+    (when-let ((s (string-join
+                   (mapcar #'dom-text (dom-by-tag sense 'OPP))
+                   ", ")))
+      (unless (string-empty-p s)
+        (insert
+         " "
+         (propertize "OPP" 'face '(:inverse-video t))
+         " "
+         s)))
     (insert "\n")
     (dolist (dom (dom-by-tag sense 'EXAMPLE))
       (insert " " (dom-texts (dom-child-by-tag dom 'BASE) "") "\n"))
