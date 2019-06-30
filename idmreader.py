@@ -232,7 +232,7 @@ class ArchiveReader(object):
 
 
 if __name__ == '__main__':
-    DATA_DIR = os.path.expanduser('~/ldoce5.data')
+    DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ldoce5.data')
     ARCHIVE_NAME = 'fs'
     reader = ArchiveReader(DATA_DIR, ARCHIVE_NAME)
     for path, name, location in list_files(DATA_DIR, ARCHIVE_NAME):
