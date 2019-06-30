@@ -77,6 +77,10 @@
   (let ((HYPHENATION (string-trim (dom-text (dom-child-by-tag (dom-child-by-tag head 'HWD) 'BASE))))
         (HOMNUM      (string-trim (dom-text (dom-child-by-tag head 'HOMNUM))))
         (PronCodes   (string-trim (dom-texts (dom-child-by-tag head 'PronCodes) "")))
+        (FREQ (mapconcat (lambda (dom)
+                           (propertize (string-trim (dom-texts dom "")) 'face '(:box t)))
+                         (dom-by-tag head 'FREQ)
+                         " "))
         (POS (mapconcat (lambda (dom)
                           (string-trim (dom-texts dom "")))
                         (dom-by-tag head 'POS)
@@ -88,10 +92,13 @@
           PronCodes (if (string-empty-p PronCodes)
                         nil
                       PronCodes)
+          FREQ (if (string-empty-p FREQ)
+                   nil
+                 FREQ)
           POS (if (string-empty-p POS)
                   nil
                 POS))
-    (string-join (delq nil (list (concat HYPHENATION HOMNUM) PronCodes POS)) " ")))
+    (string-join (delq nil (list (concat HYPHENATION HOMNUM) PronCodes FREQ POS)) " ")))
 
 (defun ldoce5--Sense (sense)
   (with-temp-buffer
