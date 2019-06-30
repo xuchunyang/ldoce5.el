@@ -49,6 +49,15 @@
          (error "ldoce5--search failed: %s" (buffer-string)))))
     (_ (user-error "%s is not known" word))))
 
+(defun ldoce5--find (location)
+  (with-temp-buffer
+    (if (zerop (call-process
+                ldoce5-python-interpreter nil t nil
+                (expand-file-name "ldoce5.py" ldoce5--load-dir)
+                "lookup" location))
+        (libxml-parse-xml-region (point-min) (point-max))
+      (error "ldoce5--find failed: %s" (buffer-string)))))
+
 (defvar ldoce5--list nil)
 
 (defun ldoce5--list ()
@@ -116,15 +125,40 @@
                    "LDOCE5 Lookup: ")))
     (completing-read prompt (ldoce5--list) nil t nil nil default)))
 
+(defun ldoce5--display (dom)
+  (with-current-buffer (get-buffer-create "*LDOCE5*")
+    (erase-buffer)
+    (insert (ldoce5--Head (dom-child-by-tag dom 'Head)) "\n")
+    (insert (string-join (mapcar #'ldoce5--Sense (dom-by-tag dom 'Sense)) "\n"))
+    (goto-char (point-min))
+    (pop-to-buffer (current-buffer))))
+
 (defun ldoce5-lookup (word)
   (interactive (list (ldoce5--read-word)))
   (let ((dom (ldoce5--search word)))
-    (with-current-buffer (get-buffer-create "*LDOCE5*")
-      (erase-buffer)
-      (insert (ldoce5--Head (dom-child-by-tag dom 'Head)) "\n")
-      (insert (string-join (mapcar #'ldoce5--Sense (dom-by-tag dom 'Sense)) "\n"))
-      (goto-char (point-min))
-      (pop-to-buffer (current-buffer)))))
+    (ldoce5--display dom)))
+
+(defvar ldoce5-helm--list nil
+  "Internal cache variable for ldoce5 words.")
+
+(declare-function helm "helm")
+(declare-function helm-make-source "helm-source")
+
+(defun ldoce5-helm ()
+  (interactive)
+  (require 'helm)
+  (unless ldoce5-helm--list
+    (setq ldoce5-helm--list
+          (mapcar
+           (pcase-lambda (`(,word ,pos ,location))
+             (cons (format "%-20s %s" word pos)
+                   location))
+           (ldoce5--list))))
+  (helm
+   :sources
+   (helm-make-source "LDOCE5" 'helm-source-sync
+     :candidates ldoce5-helm--list
+     :action (lambda (location) (ldoce5--display (ldoce5--find location))))))
 
 (provide 'ldoce5)
 ;;; ldoce5.el ends here
