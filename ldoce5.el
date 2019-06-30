@@ -115,6 +115,9 @@
     (when-let ((dom (dom-child-by-tag sense 'LEXUNIT)))
       (insert " " (propertize (string-trim (dom-texts dom ""))
                               'face '(:background "dark green"))))
+    (when-let ((dom (dom-child-by-tag sense 'REGISTERLAB)))
+      (insert " " (propertize (string-trim (dom-texts dom ""))
+                              'face 'italic)))
     (when-let ((dom (dom-child-by-tag sense 'DEF)))
       (insert " " (string-trim (dom-texts dom ""))))
     (when-let ((s (string-join
