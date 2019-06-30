@@ -39,7 +39,7 @@
 (defun ldoce5--search (word)
   "Search WORD and return parsed XML."
   (pcase (assoc word (ldoce5--list))
-    (`(,_ ,location)
+    (`(,_ ,_pos ,location)
      (with-temp-buffer
        (if (zerop (call-process
                    ldoce5-python-interpreter nil t nil
@@ -57,7 +57,7 @@
     (setq ldoce5--list
           (mapcar
            (lambda (line)
-             (split-string line " | "))
+             (split-string line "|"))
            (process-lines ldoce5-python-interpreter
                           (expand-file-name "ldoce5.py" ldoce5--load-dir)
                           "list"))))

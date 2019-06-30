@@ -6,12 +6,14 @@ DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ldoce5.dat
 READER = ArchiveReader(DATA_DIR, 'fs')
 
 
-def list():
+def list_words():
     for _, _, location in list_files(DATA_DIR, 'fs'):
         data = READER.read(location).decode()
         root = et.fromstring(data)
         base = root.find('Head/HWD/BASE').text
-        print(f'{base} | {location}')
+        pos_elems = root.findall('Head/POS')
+        pos = ', '.join(''.join(e.itertext()).strip() for e in pos_elems)
+        print(f'{base}|{pos}|{location}')
 
 # '(24596514, 9096, 60641, 963)' => (24596514, 9096, 60641, 963)
 def str_to_location(s):
@@ -41,6 +43,6 @@ if __name__ == '__main__':
         word = sys.argv[2]
         search(word)
     elif action == 'list':
-        list()
+        list_words()
     elif action == 'lookup':
         lookup(sys.argv[2])
