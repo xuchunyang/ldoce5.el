@@ -144,8 +144,37 @@
          " "
          s)))
     (insert "\n")
-    (dolist (dom (dom-by-tag sense 'EXAMPLE))
-      (insert " " (dom-texts (dom-child-by-tag dom 'BASE) "") "\n"))
+    (dolist (dom (dom-children sense))
+      (pcase (dom-tag dom)
+        ('EXAMPLE (insert " " (dom-texts (dom-child-by-tag dom 'BASE) "") "\n"))
+        ('ColloExa
+         (insert
+          "\n"
+          (dom-text (dom-child-by-tag dom 'COLLO))
+          "\n")
+         (insert
+          " "
+          (propertize
+           (dom-text (dom-child-by-tag (dom-child-by-tag dom 'EXAMPLE) 'BASE))
+           'face 'italic)
+          "\n"))
+        ('F2NBox
+         (cl-labels ((ds
+                      (dom)
+                      (mapconcat
+                       (lambda (elem)
+                         (if (stringp elem)
+                             elem
+                           (pcase (dom-tag elem)
+                             ('EXPR       (propertize (ds elem) 'face 'bold))
+                             ('COLLOINEXA (propertize (ds elem) 'face 'bold))
+                             ('EXAMPLE (concat " " (ds (dom-child-by-tag elem 'BASE))))
+                             (_ (ds elem)))))
+                       (dom-children dom)
+                       (pcase (dom-tag dom)
+                         ('F2NBox "\n")
+                         (_ "")))))
+           (insert "\n" (ds dom) "\n")))))
     (buffer-string)))
 
 (defun ldoce5--read-word ()
