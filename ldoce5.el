@@ -74,7 +74,8 @@
 
 (defun ldoce5--Head (head)
   "Format <Head>."
-  (let ((HYPHENATION (string-trim (dom-text (dom-child-by-tag (dom-child-by-tag head 'HWD) 'BASE))))
+  (let ((HYPHENATION (dom-text (dom-child-by-tag head 'HYPHENATION)))
+        (BASE        (dom-text (dom-child-by-tag (dom-child-by-tag head 'HWD) 'BASE)))
         (HOMNUM      (string-trim (dom-text (dom-child-by-tag head 'HOMNUM))))
         (PronCodes   (string-trim (dom-texts (dom-child-by-tag head 'PronCodes) "")))
         (FREQ (mapconcat (lambda (dom)
@@ -85,10 +86,11 @@
                           (string-trim (dom-texts dom "")))
                         (dom-by-tag head 'POS)
                         ", ")))
-    (setq HYPHENATION HYPHENATION
+    (setq HYPHENATION (propertize HYPHENATION 'BASE BASE)
           HOMNUM (if (string-empty-p HOMNUM)
                      nil
                    (propertize (propertize HOMNUM 'display '((height 0.8) (raise 0.5)))))
+          HYPHENATION (propertize HYPHENATION 'HOMNUM HOMNUM)
           PronCodes (if (string-empty-p PronCodes)
                         nil
                       PronCodes)
@@ -162,14 +164,15 @@
       ;; Without a name, M-x will ignore this command (it's good to me)
       (lambda ()
         (interactive)
-        (save-excursion
-          (goto-char (point-min))
-          (let ((word (current-word)))
-            ;; XXX Don't work for "BBC, the", ignore it for now
-            (setq word (replace-regexp-in-string (rx (group num) eos) "_\\1" word))
-            (browse-url
-             (format "http://global.longmandictionaries.com/ldoce6/dictionary#%s"
-                     word))))))
+        (browse-url
+         (format "http://global.longmandictionaries.com/ldoce6/dictionary#%s"
+                 (downcase
+                  (replace-regexp-in-string
+                   (rx (opt ",") " ") "_"
+                   (string-join
+                    (delq nil (list (get-text-property (point-min) 'BASE)
+                                    (get-text-property (point-min) 'HOMNUM)))
+                    "_")))))))
     map))
 
 (define-derived-mode ldoce5-view-mode fundamental-mode "LDOCE5"
