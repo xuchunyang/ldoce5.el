@@ -212,6 +212,9 @@
               "")
           "\n")
          (insert (ldoce5--EXAMPLE (dom-child-by-tag dom 'EXAMPLE)) "\n"))
+        ('GramExa
+         (insert (dom-text (dom-child-by-tag dom 'PROPFORMPREP)) "\n")
+         (insert (ldoce5--EXAMPLE (dom-child-by-tag dom 'EXAMPLE)) "\n"))
         ('F2NBox
          (cl-labels ((ds
                       (dom)
