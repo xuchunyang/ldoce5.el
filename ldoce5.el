@@ -177,6 +177,24 @@
            (insert "\n" (ds dom) "\n")))))
     (buffer-string)))
 
+(defun ldoce5--Tail/ThesBox/Section/Exponent (dom)
+  (let ((EXP (dom-text (dom-child-by-tag dom 'EXP)))
+        (DEF (dom-text (dom-child-by-tag dom 'DEF)))
+        (THESEXA (mapconcat
+                  (lambda (elem)
+                    (concat " "(dom-text (dom-child-by-tag elem 'BASE))))
+                  (dom-by-tag dom 'THESEXA)
+                  "\n")))
+    (format "%s %s:\n%s" (propertize EXP 'face 'bold) DEF THESEXA)))
+
+(defun ldoce5--Tail/ThesBox (dom)
+  (concat
+   "\nTHESAURUS\n\n"
+   (mapconcat
+    #'ldoce5--Tail/ThesBox/Section/Exponent
+    (dom-by-tag (dom-child-by-tag dom 'Section) 'Exponent)
+    "\n\n")))
+
 (defun ldoce5--read-word ()
   (let* ((default (cond ((use-region-p)
                          (buffer-substring (region-beginning) (region-end)))
@@ -213,6 +231,8 @@
     (erase-buffer)
     (insert (ldoce5--Head (dom-child-by-tag dom 'Head)) "\n")
     (insert (string-join (mapcar #'ldoce5--Sense (dom-by-tag dom 'Sense)) "\n"))
+    (when-let ((dom (dom-child-by-tag (dom-child-by-tag dom 'Tail) 'ThesBox)))
+      (insert (ldoce5--Tail/ThesBox dom)))
     (goto-char (point-min))
     (pop-to-buffer (current-buffer))))
 
