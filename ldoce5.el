@@ -85,7 +85,8 @@
         (POS (mapconcat (lambda (dom)
                           (string-trim (dom-texts dom "")))
                         (dom-by-tag head 'POS)
-                        ", ")))
+                        ", "))
+        (GRAM (string-trim (dom-texts (dom-child-by-tag head 'GRAM) ""))))
     (setq HYPHENATION (propertize HYPHENATION 'BASE BASE)
           HOMNUM (if (string-empty-p HOMNUM)
                      nil
@@ -99,8 +100,13 @@
                  FREQ)
           POS (if (string-empty-p POS)
                   nil
-                POS))
-    (string-join (delq nil (list (concat HYPHENATION HOMNUM) PronCodes FREQ POS)) " ")))
+                POS)
+          GRAM (if (string-empty-p POS)
+                   nil
+                 GRAM))
+    (string-join
+     (delq nil (list (concat HYPHENATION HOMNUM) PronCodes FREQ POS GRAM))
+     " ")))
 
 (defun ldoce5--Sense (sense)
   (with-temp-buffer
