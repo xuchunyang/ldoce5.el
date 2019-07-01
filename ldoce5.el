@@ -129,7 +129,7 @@
       (unless (string-empty-p s)
         (insert
          " "
-         (propertize "SYN" 'face '(:inverse-video t))
+         (propertize "SYN" 'face '((:box "blue") (:foreground "blue")))
          " "
          s)))
     (when-let ((s (string-join
@@ -138,7 +138,7 @@
       (unless (string-empty-p s)
         (insert
          " "
-         (propertize "OPP" 'face '(:inverse-video t))
+         (propertize "OPP" 'face '((:box "blue") (:foreground "blue")))
          " "
          s)))
     (insert "\n")
