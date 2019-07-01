@@ -262,7 +262,13 @@
       (delete-file tmp))))
 
 (defun ldoce5--mpg123 ()
-  (call-process-region nil nil "mpg123" nil nil nil "-"))
+  (let ((tmp (make-temp-file "ldoce5-" nil ".mp3")))
+    (let ((coding-system-for-write 'binary))
+      (write-region nil nil tmp nil 'shut-up))
+    (set-process-sentinel
+     (start-process "mpg123" " *mpg123*" "mpg123" tmp)
+     (lambda (_process _event)
+       (delete-file tmp)))))
 
 ;; (Audio
 ;;  ((resource . "GB_HWD_PRON")
