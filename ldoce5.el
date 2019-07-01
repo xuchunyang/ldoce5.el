@@ -207,6 +207,9 @@
          (insert
           "\n"
           (dom-text (dom-child-by-tag dom 'COLLO))
+          (if-let ((dom (dom-child-by-tag dom 'GLOSS)))
+              (dom-texts dom "")
+              "")
           "\n")
          (insert (ldoce5--EXAMPLE (dom-child-by-tag dom 'EXAMPLE)) "\n"))
         ('F2NBox
