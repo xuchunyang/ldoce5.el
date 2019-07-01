@@ -72,6 +72,17 @@
                           "list"))))
   ldoce5--list)
 
+(defvar ldoce5-audio-map
+  (let ((map (make-sparse-keymap))
+        (command (lambda ()
+                   (interactive)
+                   (if-let ((fn (get-text-property (point) 'audio-fn)))
+                       (funcall fn)
+                     (user-error "Can't play audio, no `audio-fn' found at point")))))
+    (define-key map (kbd "RET") command)
+    (define-key map (kbd "<mouse-1>") command)
+    map))
+
 (defun ldoce5--Head (head)
   "Format <Head>."
   (let ((HYPHENATION (dom-text (dom-child-by-tag head 'HYPHENATION)))
@@ -86,7 +97,27 @@
                           (string-trim (dom-texts dom "")))
                         (dom-by-tag head 'POS)
                         ", "))
-        (GRAM (string-trim (dom-texts (dom-child-by-tag head 'GRAM) ""))))
+        (GRAM (string-trim (dom-texts (dom-child-by-tag head 'GRAM) "")))
+        (Audio (mapconcat
+                (lambda (elem)
+                  (let ((resource (dom-attr elem 'resource))
+                        (topic (dom-attr elem 'topic)))
+                    (pcase resource
+                      ("GB_HWD_PRON"
+                       (propertize "英音"
+                                   'audio-fn (lambda () (ldoce5--play-audio resource topic))
+                                   'keymap ldoce5-audio-map
+                                   'mouse-face 'highlight
+                                   'help-echo "mouse-1: Play British headword pronunciation"))
+                      ("US_HWD_PRON"
+                       (propertize "美音"
+                                   'audio-fn (lambda () (ldoce5--play-audio resource topic))
+                                   'keymap ldoce5-audio-map
+                                   'mouse-face 'highlight
+                                   'help-echo "mouse-1: Play American headword pronunciation"))
+                      (other (error "Unsupported pronunciation: %s" other)))))
+                (dom-by-tag head 'Audio)
+                " ")))
     (setq HYPHENATION (propertize HYPHENATION 'BASE BASE)
           HOMNUM (if (string-empty-p HOMNUM)
                      nil
@@ -103,9 +134,12 @@
                 POS)
           GRAM (if (string-empty-p POS)
                    nil
-                 GRAM))
+                 GRAM)
+          Audio (if (string-empty-p Audio)
+                    nil
+                  Audio))
     (string-join
-     (delq nil (list (concat HYPHENATION HOMNUM) PronCodes FREQ POS GRAM))
+     (delq nil (list (concat HYPHENATION HOMNUM) PronCodes FREQ POS GRAM Audio))
      " ")))
 
 (defun ldoce5--Sense (sense)
@@ -200,6 +234,36 @@
     #'ldoce5--Tail/ThesBox/Section/Exponent
     (dom-by-tag (dom-child-by-tag dom 'Section) 'Exponent)
     "\n\n")))
+
+(defun ldoce5--afplay ()
+  (let ((tmp (make-temp-file "ldoce5-" nil ".mp3")))
+    (unwind-protect
+        (progn
+          (let ((coding-system-for-write 'binary))
+            (write-region nil nil tmp))
+          (call-process "afplay" nil nil nil tmp))
+      (delete-file tmp))))
+
+(defun ldoce5--mpg123 ()
+  (call-process-region nil nil "mpg123" nil nil nil "-"))
+
+;; (Audio
+;;  ((resource . "GB_HWD_PRON")
+;;   (topic . "co/compli/complicated0205.mp3")))
+(defun ldoce5--play-audio (resource topic)
+  (with-temp-buffer
+    (if (zerop
+         (call-process
+          "python3"
+          nil t nil
+          (expand-file-name "ldoce5.py" ldoce5--load-dir)
+          "audio"
+          resource
+          topic))
+        (cond ((executable-find "mpg123") (ldoce5--mpg123))
+              ((executable-find "afplay") (ldoce5--afplay))
+              (t (error "Can't find mpg123 or afplay to play audio")))
+      (error "python3 ldoce5.py failed: %s" (string-trim (buffer-string))))))
 
 (defun ldoce5--read-word ()
   (let* ((default (cond ((use-region-p)

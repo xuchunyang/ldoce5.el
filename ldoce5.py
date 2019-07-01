@@ -35,6 +35,21 @@ def search(word):
     print(f'{word} is not found')
     exit(1)
 
+# (Audio
+#  ((resource . "GB_HWD_PRON")
+#   (topic . "co/compli/complicated0205.mp3")))
+def audio(resource, topic):
+    archive_name = resource.lower()
+    reader = ArchiveReader(DATA_DIR, archive_name)
+    for path, name, location in list_files(DATA_DIR, archive_name):
+        path = '/'.join(list(path) + [name])
+        if path == topic:
+            sys.stdout.buffer.write(reader.read(location))
+            return
+
+    print(f"ldoce5.py failed: audio({resource!r}, {topic!r})")
+    exit(1)
+
 
 if __name__ == '__main__':
     import sys
@@ -46,3 +61,7 @@ if __name__ == '__main__':
         list_words()
     elif action == 'lookup':
         lookup(sys.argv[2])
+    elif action == 'audio':
+        resource = sys.argv[2]
+        topic = sys.argv[3]
+        audio(resource, topic)
