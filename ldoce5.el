@@ -142,6 +142,21 @@
      (delq nil (list (concat HYPHENATION HOMNUM) PronCodes FREQ POS GRAM Audio))
      " ")))
 
+(defun ldoce5--EXAMPLE (example)
+  (let ((BASE (dom-texts (dom-child-by-tag example 'BASE) "")))
+    (if-let ((Audio (dom-child-by-tag example 'Audio)))
+        (let ((resource (dom-attr Audio 'resource))
+              (topic (dom-attr Audio 'topic)))
+          (format "%s %s"
+                  (propertize
+                   "🗣"
+                   'audio-fn (lambda () (ldoce5--play-audio resource topic))
+                   'keymap ldoce5-audio-map
+                   'mouse-face 'highlight
+                   'help-echo "mouse-1: Play example sentence")
+                  BASE))
+      (format " %s" BASE))))
+
 (defun ldoce5--Sense (sense)
   (with-temp-buffer
     (insert (propertize (dom-text (car (dom-by-class sense "sensenum")))
@@ -186,18 +201,14 @@
     (insert "\n")
     (dolist (dom (dom-children sense))
       (pcase (dom-tag dom)
-        ('EXAMPLE (insert " " (dom-texts (dom-child-by-tag dom 'BASE) "") "\n"))
+        ('EXAMPLE
+         (insert (ldoce5--EXAMPLE dom) "\n"))
         ('ColloExa
          (insert
           "\n"
           (dom-text (dom-child-by-tag dom 'COLLO))
           "\n")
-         (insert
-          " "
-          (propertize
-           (dom-text (dom-child-by-tag (dom-child-by-tag dom 'EXAMPLE) 'BASE))
-           'face 'italic)
-          "\n"))
+         (insert (ldoce5--EXAMPLE (dom-child-by-tag dom 'EXAMPLE)) "\n"))
         ('F2NBox
          (cl-labels ((ds
                       (dom)
