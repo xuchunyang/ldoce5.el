@@ -236,7 +236,7 @@
 
 (defun ldoce5--Tail/ThesBox/Section/Exponent (dom)
   (let ((EXP (dom-text (dom-child-by-tag dom 'EXP)))
-        (DEF (dom-text (dom-child-by-tag dom 'DEF)))
+        (DEF (string-trim (dom-texts (dom-child-by-tag dom 'DEF) "")))
         (THESEXA (mapconcat
                   (lambda (elem)
                     (concat " "(dom-text (dom-child-by-tag elem 'BASE))))
