@@ -239,7 +239,7 @@
         (DEF (string-trim (dom-texts (dom-child-by-tag dom 'DEF) "")))
         (THESEXA (mapconcat
                   (lambda (elem)
-                    (concat " "(dom-text (dom-child-by-tag elem 'BASE))))
+                    (concat " " (dom-text (dom-child-by-tag elem 'BASE))))
                   (dom-by-tag dom 'THESEXA)
                   "\n")))
     (format "%s %s:\n%s" (propertize EXP 'face 'bold) DEF THESEXA)))
