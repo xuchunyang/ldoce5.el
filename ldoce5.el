@@ -353,6 +353,7 @@
                    location))
            (ldoce5--list))))
   (helm
+   :buffer "*helm ldoce5*"
    :sources
    (helm-make-source "LDOCE5" 'helm-source-sync
      :candidates ldoce5-helm--list
