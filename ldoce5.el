@@ -213,8 +213,10 @@
           "\n")
          (insert (ldoce5--EXAMPLE (dom-child-by-tag dom 'EXAMPLE)) "\n"))
         ('GramExa
-         (insert (dom-text (dom-child-by-tag dom 'PROPFORMPREP)) "\n")
-         (insert (ldoce5--EXAMPLE (dom-child-by-tag dom 'EXAMPLE)) "\n"))
+         (insert (dom-text (or (dom-child-by-tag dom 'PROPFORMPREP)
+                               (dom-child-by-tag dom 'PROPFORM))) "\n")
+         (insert (mapconcat #'ldoce5--EXAMPLE (dom-by-tag dom 'EXAMPLE) "\n")
+                 "\n"))
         ('F2NBox
          (cl-labels ((ds
                       (dom)
