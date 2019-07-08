@@ -172,6 +172,11 @@
     (when-let ((dom (dom-child-by-tag sense 'LEXUNIT)))
       (insert " " (propertize (string-trim (dom-texts dom ""))
                               'face '(:background "dark green"))))
+    (when-let ((doms
+                (and (not (eq (dom-tag sense) 'Subsense))
+                     (dom-by-tag sense 'Subsense))))
+      (or (bolp) (insert "\n"))
+      (insert (mapconcat #'ldoce5--Sense doms "\n")))
     (when-let ((dom (dom-child-by-tag sense 'REGISTERLAB)))
       (insert " " (propertize (string-trim (dom-texts dom ""))
                               'face 'italic)))
@@ -209,7 +214,7 @@
           (dom-text (dom-child-by-tag dom 'COLLO))
           (if-let ((dom (dom-child-by-tag dom 'GLOSS)))
               (dom-texts dom "")
-              "")
+            "")
           "\n")
          (insert (ldoce5--EXAMPLE (dom-child-by-tag dom 'EXAMPLE)) "\n"))
         ('GramExa
