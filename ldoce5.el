@@ -259,6 +259,38 @@
     (dom-by-tag (dom-child-by-tag dom 'Section) 'Exponent)
     "\n\n")))
 
+(defun ldoce5--Tail/ColloBox/Section/Collocate (dom)
+  (with-temp-buffer
+    (insert (dom-text (dom-child-by-tag dom 'COLLOC)))
+    (let ((s (dom-texts (dom-child-by-tag dom 'COLLGLOSS) "")))
+      (or (string-empty-p s) (insert s)))
+    (insert "\n")
+    (insert
+     (mapconcat
+      (lambda (x)
+        (concat " " (dom-text (dom-by-tag x 'BASE))))
+      (dom-by-tag dom 'COLLEXA)
+      "\n"))
+    (insert "\n")
+    (buffer-string)))
+
+(defun ldoce5--Tail/ColloBox/Section (dom)
+  (concat
+   (upcase (dom-text (dom-child-by-tag dom 'SECHEADING)))
+   "\n"
+   (mapconcat
+    #'ldoce5--Tail/ColloBox/Section/Collocate
+    (dom-by-tag dom 'Collocate)
+    "\n")))
+
+(defun ldoce5--Tail/ColloBox (dom)
+  (concat
+   "\nCOLLOCATIONS\n"
+   (mapconcat
+    #'ldoce5--Tail/ColloBox/Section
+    (dom-by-tag dom 'Section)
+    "\n\n")))
+
 (defun ldoce5--afplay ()
   (let ((tmp (make-temp-file "ldoce5-" nil ".mp3")))
     (let ((coding-system-for-write 'binary))
@@ -333,6 +365,8 @@
     (insert (string-join (mapcar #'ldoce5--Sense (dom-by-tag dom 'Sense)) "\n"))
     (when-let ((dom (dom-child-by-tag (dom-child-by-tag dom 'Tail) 'ThesBox)))
       (insert (ldoce5--Tail/ThesBox dom)))
+    (when-let ((dom (dom-child-by-tag (dom-child-by-tag dom 'Tail) 'ColloBox)))
+      (insert (ldoce5--Tail/ColloBox dom)))
     (goto-char (point-min))
     (pop-to-buffer (current-buffer))))
 
