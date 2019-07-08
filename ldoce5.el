@@ -256,12 +256,12 @@
 
 (defun ldoce5--afplay ()
   (let ((tmp (make-temp-file "ldoce5-" nil ".mp3")))
-    (unwind-protect
-        (progn
-          (let ((coding-system-for-write 'binary))
-            (write-region nil nil tmp))
-          (call-process "afplay" nil nil nil tmp))
-      (delete-file tmp))))
+    (let ((coding-system-for-write 'binary))
+      (write-region nil nil tmp nil 'shut-up))
+    (set-process-sentinel
+     (start-process "afplay" " *afplay*" "afplay" tmp)
+     (lambda (_process _event)
+       (delete-file tmp)))))
 
 (defun ldoce5--mpg123 ()
   (let ((tmp (make-temp-file "ldoce5-" nil ".mp3")))
