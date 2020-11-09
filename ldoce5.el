@@ -386,19 +386,33 @@
 (defun ldoce5-helm ()
   (interactive)
   (require 'helm)
-  (unless ldoce5-helm--list
-    (setq ldoce5-helm--list
-          (mapcar
-           (pcase-lambda (`(,word ,pos ,location))
-             (cons (format "%-20s %s" word pos)
-                   location))
-           (ldoce5--list))))
-  (helm
-   :buffer "*helm ldoce5*"
-   :sources
-   (helm-make-source "LDOCE5" 'helm-source-sync
-     :candidates ldoce5-helm--list
-     :action (lambda (location) (ldoce5--display (ldoce5--find location))))))
+  (let ((buffer " *ldoce5 helm cache"))
+    (unless (get-buffer buffer)
+      (message "[ldoce5-helm] Make caching...")
+      (with-current-buffer (get-buffer-create buffer)
+        ;; Disable undo
+        (setq buffer-undo-list t)
+        (pcase-dolist (`(,word ,pos ,location)
+                       (ldoce5--list))
+          (insert (propertize
+                   (if (string-empty-p pos) word (format "%s (%s)" word pos))
+                   'location location)
+                  "\n"))
+        (delete-char -1)
+        (goto-char (point-min))
+        (setq buffer-read-only t)))
+    (helm
+     :buffer "*helm longman*"
+     :sources
+     (helm-make-source "longman" 'helm-source-in-buffer
+       :init (lambda ()
+               (helm-init-candidates-in-buffer buffer nil))
+       :get-line #'buffer-substring
+       :action
+       (lambda (_)
+         (ldoce5--display
+          (ldoce5--find
+           (get-text-property 0 'location (helm-get-selection nil 'withprop)))))))))
 
 (provide 'ldoce5)
 ;;; ldoce5.el ends here
