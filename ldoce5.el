@@ -316,7 +316,7 @@
   (with-temp-buffer
     (if (zerop
          (call-process
-          "python3"
+          ldoce5-python-interpreter
           nil t nil
           (expand-file-name "ldoce5.py" ldoce5--load-dir)
           "audio"
